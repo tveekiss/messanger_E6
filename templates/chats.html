@@ -1,0 +1,65 @@
+{% extends 'flatpages/default.html' %}
+
+{% block title %}
+    Чаты
+{% endblock %}
+
+{% block css %}
+    {% load static %}
+    <link href="{% static "styles/chats.css"%}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block content %}
+        <h1>Чаты</h1>
+        <div class="user-cards">
+        </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+    const user = {{ user }}
+
+fetch(`http://127.0.0.1:8000/api/v1/chats/?user=${user.id}`)
+    .then((response) => {
+        const result = response.json();
+        return result
+    })
+    .then((data) => {
+        displayResult(data);
+    })
+    .catch(() => {console.log('error')})
+
+
+const usersNode = document.querySelector('.user-cards')
+
+function displayResult(data) {
+    let cards = ''
+    const username = user.username
+    data.forEach(item => {
+        item.users.forEach( block => {
+            if (block.user.username !== user.username) {
+                const cardBlock = `
+                    <div class="user-card" id="chat_${item.id}">
+                        <img src="${block.avatar}" alt="">
+                        <span>${block.user.username}</span>
+                    </div>
+                    `
+                cards += cardBlock;
+            }
+            }
+            
+        )
+    })
+
+    usersNode.innerHTML = cards;
+    
+    data.forEach(item => {
+        const card = document.getElementById(`chat_${item.id}`)
+        card.addEventListener('click', () => {
+            window.location.href = `${window.location + item.id}/`
+        })
+    })
+}
+
+    </script>
+{% endblock%}

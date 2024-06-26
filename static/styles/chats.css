@@ -1,0 +1,60 @@
+main {
+    display: flex;
+    margin: 0;
+    flex-direction: column;
+    width: 100%;
+    height: 90%;
+    align-items: center;
+}
+
+main h1 {
+    font-size: 50px;
+    font-family: RobotoMedium, sans-serif;
+    color: white;
+    margin: 50px;
+    text-align: center;
+}
+
+.user-cards {
+    border: 1px solid white;
+    border-radius: 30px;
+    width: 80%;
+    height: 80%;
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    align-content:flex-start;
+}
+
+.user-card {
+    margin: 15px;
+    border: 1px solid white;
+    border-radius: 10px;
+    padding: 10px;
+    height: 5%;
+    width: 100%;
+    display: flex;
+
+    align-items: center;
+}
+
+.user-card span {
+    color: white;
+    padding: 10px;
+    font-family: RobotoLight, sans-serif;
+    font-size: 20px;
+}
+
+.user-card img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50px;
+}
+
+.user-card:hover {
+    background-color: gray;
+    cursor: pointer;
+    -webkit-transition: all 0.25s;
+    -moz-transition: all 0.25s;
+    -o-transition: all 0.25s;
+}

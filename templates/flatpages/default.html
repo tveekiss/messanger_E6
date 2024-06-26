@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        {% block title %}
+        {% endblock %}
+    </title>
+    {% load static %}
+    {% block css %}
+    {% endblock %}
+    <link rel="stylesheet" href="{% static 'styles/default.css' %}" type="text/css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{% url 'home' %}">Главная</a>
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'chats' %}">Мои чаты</a>
+            {% endif %}
+            <div class="login-register">
+                {% if request.user.is_authenticated %}
+                     <div id="user-info"></div> | <a href="{% url 'logout' %}">Выход</a>
+                {% else %}
+                    <a href="{% url 'register' %}">Регистрация</a> | <a href="{% url 'login' %}">Вход</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+    <main>
+        {% block content %}
+            {{ content }}
+        {% endblock %}
+    </main>
+    {% block script %}
+    {% endblock %}
+    <script>
+        if (user !== null) {
+            const userCard = `
+              <input type="file" id="avatarInput" style="display: none;">
+              <img class="avatar" id="avatarPreview" src="${user.avatar}" />
+              <div id="user-username">
+                    <div class="username" id="username">${user.username}</div>
+              </div>
+              
+          
+              `
+            const userNode = document.getElementById('user-info')
+            userNode.innerHTML = userCard;
+        
+        
+            const avatarInput = document.getElementById('avatarInput');
+            const avatarPreview = document.getElementById('avatarPreview');
+            
+            
+            avatarPreview.addEventListener('click', () => {
+                avatarInput.click();
+            });
+            
+            function getCookie(name) {
+                var matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
+                return matches ? decodeURIComponent(matches[1]) : undefined;
+            }
+    
+            avatarInput.addEventListener('change', () => {
+                    const formData = new FormData();
+                    formData.append('avatar', avatarInput.files[0]);
+                        fetch(`http://${window.location.host}/api/v1/user/${user.id}/`, {
+                            method: 'PUT',
+                            headers: {
+                                "X-CSRFToken" : getCookie('csrftoken')
+                            },
+                            body: formData
+                        })
+                            .then((response) => {
+                                return response.json()
+                            })
+                            .then((e) => {
+                                avatarPreview.src = e.avatar
+                            })
+                            .catch(() => {
+                                alert('Произошла ошибка выгрузки фото на сервер')
+                            })
+    
+                        
+            });
+            
+            const usernameElement = document.getElementById('username');
+            const usernameNode = document.getElementById('user-username');
+            usernameElement.addEventListener('click', () => {
+                const editForm = document.createElement('form');
+    editForm.id = 'editForm';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'newUsername';
+    input.value = usernameElement.innerHTML;
+
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.style.display = 'none';
+
+    editForm.appendChild(input);
+    editForm.appendChild(button);
+
+    usernameNode.appendChild(editForm);
+
+    document.getElementById('username').style.display = 'none';
+    const newUsernameInput = document.getElementById('newUsername');
+    newUsernameInput.focus();
+
+    editForm.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            const newUsername = newUsernameInput.value;
+
+            fetch(`http://${window.location.host}/api/v1/user/${user.id}/`, {
+                method: 'PUT',
+                headers: {
+                    "X-CSRFToken": getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user: {
+                        username: newUsername
+                    }
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('username').style.display = 'flex';
+                document.getElementById('username').innerHTML = data.user.username;
+                editForm.remove();
+            })
+            .catch(() => {
+                alert('Ошибка изменения имени пользователя');
+            });
+        } else if (event.key === 'Escape') {
+            document.getElementById('username').style.display = 'flex';
+            editForm.remove();
+        }
+    });
+});
+        }
+    </script>
+</body>
+</html>

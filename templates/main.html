@@ -1,0 +1,65 @@
+{% extends 'flatpages/default.html' %}
+
+{% block title %}
+    Главная
+{% endblock %}
+
+{% block css %}
+    {% load static %}
+    <link href="{% static "styles/main.css"%}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block content %}
+        <h1>ВСЕ ПОЛЬЗОВАТЕЛИ</h1>
+        <div class="user-cards">
+        </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+    let user = {{ user|safe }}
+    
+fetch(`http://127.0.0.1:8000/api/v1/users/`)
+    .then((response) => {
+        const result = response.json();
+        return result
+    })
+    .then((data) => {
+        displayResult(data);
+    })
+    .catch(() => {
+        console.log('error')
+    })
+    
+    
+function displayResult(data) {
+    let cards = ''
+
+    data.forEach(item => {
+        if (user == null) {
+            const cardBlock = `
+                <div class="user-card" id="user_${item.id}">
+                    <img src="${item.avatar}" alt="">
+                    <span>${item.user.username}</span>
+                </div>
+                `
+            cards += cardBlock;
+        }
+        else {if (item.user.username !== user.username) {
+            const cardBlock = `
+                <div class="user-card" id="user_${item.id}">
+                    <img src="${item.avatar}" alt="">
+                    <span>${item.user.username}</span>
+                </div>
+                `
+            cards += cardBlock;
+        }}
+        
+    })
+    
+    const usersNode = document.querySelector('.user-cards')
+    usersNode.innerHTML = cards;
+}
+
+    </script>
+{% endblock%}

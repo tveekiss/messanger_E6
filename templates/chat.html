@@ -1,0 +1,69 @@
+{% extends 'flatpages/default.html' %}
+
+{% block title %}
+    Чат
+{% endblock %}
+
+{% block css %}
+    {% load static %}
+    <link href="{% static "styles/chat.css"%}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block content %}
+        <div class="chat-cards">
+        </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        const user = {{ user }}
+        const chat_id = {{ room_id }}
+        
+        function fetchMessages() {
+            chatSocket.send(JSON.stringify({'command': 'fetch_messages' }));
+        }
+        
+        function createMessage(data) {
+            const author = data.user;
+            const msgListTag = document.createElement('li');
+            const imgTag = document.createElement('img');
+            const pTag = document.createElement('p');
+            pTag.textContent = data.text;
+            imgTag.src = data.user.avatar;
+            
+            if (author === username) {
+              msgListTag.className = 'sent';
+            } else {
+              msgListTag.className = 'replies';
+            }
+            msgListTag.appendChild(imgTag);
+            msgListTag.appendChild(pTag);
+            document.querySelector('#chat-log').appendChild(msgListTag);
+        }
+        
+        const chatSocket = new ReconnectingWebSocket(
+        'ws://' + window.location.host +
+        '/ws/chat/' + roomName + '/');
+        
+        chatSocket.onopen = function(e) {
+            fetchMessages();
+        }
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            console.log(data)
+            if (data['command'] === 'messages') {
+                for (let message of data['messages']) {
+                    createMessage(message);
+                }
+            } else if (data['command'] === 'new_message'){
+                createMessage(data['message']);
+            }
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+    </script>
+{% endblock%}
