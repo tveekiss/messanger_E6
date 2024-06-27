@@ -11,11 +11,11 @@ main h1 {
     font-size: 50px;
     font-family: RobotoMedium, sans-serif;
     color: white;
-    margin: 50px;
+    margin: 50px 0 0;
     text-align: center;
 }
 
-.user-cards {
+.chat-cards {
     border: 1px solid white;
     border-radius: 30px;
     width: 80%;
@@ -24,9 +24,10 @@ main h1 {
     justify-content: flex-start;
     flex-wrap: wrap;
     align-content:flex-start;
+    overflow: auto;
 }
 
-.user-card {
+.chat-card {
     margin: 15px;
     border: 1px solid white;
     border-radius: 10px;
@@ -38,22 +39,41 @@ main h1 {
     align-items: center;
 }
 
-.user-card span {
+.chat-card span {
     color: white;
     padding: 10px;
     font-family: RobotoLight, sans-serif;
     font-size: 20px;
 }
 
-.user-card img {
+.chat-card img {
     width: 50px;
     height: 50px;
     border-radius: 50px;
 }
 
-.user-card:hover {
+.chat-card:hover {
     background-color: gray;
     cursor: pointer;
+    -webkit-transition: all 0.25s;
+    -moz-transition: all 0.25s;
+    -o-transition: all 0.25s;
+}
+
+.creat-chat {
+    padding: 20px 40px;
+    font-family: RobotoMedium, sans-serif;
+    font-size: 17px;
+    color: white;
+    cursor: pointer;
+    border-radius: 10px;
+    background: #4452FE;
+    border: none;
+    margin: 20px 0;
+}
+
+.creat-chat:hover {
+    background: #1722AD;
     -webkit-transition: all 0.25s;
     -moz-transition: all 0.25s;
     -o-transition: all 0.25s;

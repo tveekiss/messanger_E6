@@ -21,10 +21,19 @@ class Message(models.Model):
 
 
 class Chat(models.Model):
+
+    CHOICES = {
+        'PR': 'private',
+        'OP': 'open'
+    }
+    type = models.CharField(choices=CHOICES, max_length=10, default="PR")
+    name = models.CharField(max_length=255, blank=True)
     users = models.ManyToManyField(UserProfile, related_name='chats')
+    avatar = models.ImageField(upload_to='avatars/', default='avatars/default.png')
 
     def __str__(self):
         return ', '.join([user.user.username for user in self.users.all()])
+
 
 
 

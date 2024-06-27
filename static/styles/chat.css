@@ -1,55 +1,112 @@
-main {
+html {
+       overflow-x: hidden;
+    }
+
+.main {
     display: flex;
-    margin: 0;
     flex-direction: column;
-    width: 100%;
-    height: 90%;
     align-items: center;
     justify-content: center;
 }
 
+header {
+    position: fixed;
+}
 
+.interlocutor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+}
+.interlocutor-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
 
-.chat-cards {
+}
+
+.interlocutor-username {
+    display: flex;
+    align-items: center;
+    font-size: 30px;
+    font-family: RobotoMedium, sans-serif;
+}
+.chat {
     border: 1px solid white;
+    margin-top: 100px;
+    margin-bottom: 40px;
     border-radius: 30px;
-    width: 80%;
-    height: 80%;
+    width: 50%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.chat-log {
+    height: 70vh;
     display: flex;
     justify-content: flex-start;
     flex-wrap: wrap;
     align-content:flex-start;
+    overflow: auto;
 }
 
-.message {
+.reply,
+.send {
     margin: 15px;
     border: 1px solid white;
     border-radius: 10px;
     padding: 10px;
-    height: 5%;
     width: 100%;
     display: flex;
 
     align-items: center;
 }
 
-.user-card span {
-    color: white;
-    padding: 10px;
-    font-family: RobotoLight, sans-serif;
-    font-size: 20px;
+.send {
+    flex-direction: row-reverse;
 }
 
-.user-card img {
+
+
+.message-avatar {
     width: 50px;
     height: 50px;
     border-radius: 50px;
 }
 
-.user-card:hover {
-    background-color: gray;
-    cursor: pointer;
-    -webkit-transition: all 0.25s;
-    -moz-transition: all 0.25s;
-    -o-transition: all 0.25s;
+.message-main {
+    color: white;
+    margin: 0 15px;
+}
+
+.message-info {
+    display: flex;
+}
+
+.send .message-info,
+.send .message-content {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.message-info {
+    font-family: RobotoLight, sans-serif;
+}
+
+.message-date {
+    margin: 0 10px;
+    color: #646464;
+    font-size: 14px;
+}
+
+.message-username {
+    color: gray;
+}
+
+.message-content {
+    font-family: RobotoMedium, sans-serif;
+    font-size: 18px;
 }

@@ -7,7 +7,7 @@ from .models import Message, UserProfile
 class ChatConsumer(WebsocketConsumer):
 
     def fetch_messages(self, data):
-        messages = Message.objects.all()
+        messages = Message.objects.filter(chat=self.room_id).order_by('-timestamp')[::-1]
         content = {
             'command': 'messages',
             'messages': self.messages_to_json(messages)
@@ -17,7 +17,7 @@ class ChatConsumer(WebsocketConsumer):
     def new_message(self, data):
         author = data['from']
         author_user = UserProfile.objects.filter(user__username=author)[0]
-        message = Message.objects.create(sender=author_user, text=data['message'], chat=self.room_id)
+        message = Message.objects.create(sender=author_user, text=data['message'], chat_id=self.room_id)
         content = {
             'command': 'new_message',
             'message': self.message_to_json(message)
@@ -32,9 +32,12 @@ class ChatConsumer(WebsocketConsumer):
 
     def message_to_json(self, message):
         return {
-            'user': message.sender.user.username,
+            'user': {
+                'avatar': "http://127.0.0.1:8000/media/" + str(message.sender.avatar),
+                'username': message.sender.user.username,
+            },
             'content': message.text,
-            'timestamp': message.created_at.strftime('%d-%m-%Y %H:%M:%S')
+            'timestamp': message.timestamp.strftime('%d-%m-%Y %H:%M:%S')
         }
 
     commands = {

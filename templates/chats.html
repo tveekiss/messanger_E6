@@ -11,7 +11,10 @@
 
 {% block content %}
         <h1>Чаты</h1>
-        <div class="user-cards">
+        <div id="create-chat-div">
+            <button class="creat-chat" id="creat-chat">создать группой чат</button>
+        </div>
+        <div class="chat-cards">
         </div>
 {% endblock %}
 
@@ -21,8 +24,7 @@
 
 fetch(`http://127.0.0.1:8000/api/v1/chats/?user=${user.id}`)
     .then((response) => {
-        const result = response.json();
-        return result
+        return response.json()
     })
     .then((data) => {
         displayResult(data);
@@ -30,29 +32,36 @@ fetch(`http://127.0.0.1:8000/api/v1/chats/?user=${user.id}`)
     .catch(() => {console.log('error')})
 
 
-const usersNode = document.querySelector('.user-cards')
+const usersNode = document.querySelector('.chat-cards')
 
 function displayResult(data) {
     let cards = ''
-    const username = user.username
     data.forEach(item => {
-        item.users.forEach( block => {
-            if (block.user.username !== user.username) {
-                const cardBlock = `
-                    <div class="user-card" id="chat_${item.id}">
-                        <img src="${block.avatar}" alt="">
-                        <span>${block.user.username}</span>
-                    </div>
-                    `
-                cards += cardBlock;
-            }
-            }
-            
-        )
+        if (item.type === 'PR') {
+            item.users.forEach( block => {
+                    if (block.user.username !== user.username) {
+                        const cardBlock = `
+                        <div class="chat-card" id="chat_${item.id}">
+                            <img src="${block.avatar}" alt="avatar">
+                            <span>${block.user.username}</span>
+                        </div>
+                        `
+                        cards += cardBlock;
+                    }
+                }
+            )
+        } else {
+            const cardBlock = `
+                <div class="chat-card" id="chat_${item.id}">
+                    <img src="${item.avatar}" alt="avatar">
+                    <span>${item.name}</span>
+                </div>
+                `
+            cards += cardBlock;
+        }
     })
 
     usersNode.innerHTML = cards;
-    
     data.forEach(item => {
         const card = document.getElementById(`chat_${item.id}`)
         card.addEventListener('click', () => {
@@ -60,6 +69,59 @@ function displayResult(data) {
         })
     })
 }
+    const chatButton = document.querySelector('.creat-chat')
+    
+    chatButton.addEventListener('click', () => {
+        const form = document.createElement('form')
+        form.id = 'crateForm'
+        form.action = `${window.location.origin}api/v1/chats/`
+        form.method = 'post'
+        const input = document.createElement('input')
+        input.type = 'text'
+        input.id = 'chatName'
+        input.placeholder = 'введите имя чата'
+        const button = document.createElement('button')
+        button.type = 'submit'
+        button.textContent = 'Создать'
+        button.id ='inputChat'
+        form.appendChild(input)
+        form.appendChild(button)
+        document.getElementById('create-chat-div').appendChild(form)
+        
+        chatButton.style.display = 'none';
+        const chatNameInput = document.getElementById('chatName')
+        chatNameInput.focus()
+
+        
+        document.getElementById('crateForm').addEventListener('submit', (event) => {
+            event.preventDefault()
+           let newChatData = {
+                users_id: [user.id],
+                type: 'OP'
+           }
+           console.log(chatNameInput.value)
+           if (chatNameInput.value !== "") {
+               newChatData.name = chatNameInput.value
+               console.log(JSON.stringify(newChatData))
+               fetch(`${window.location.origin}/api/v1/chats/`, {
+                   method: 'post',
+                   headers: {
+                       "X-CSRFToken": getCookie('csrftoken'),
+                       "Content-Type": 'application/json',
+                   },
+                   body: JSON.stringify(newChatData)
+               })
+                   .then((response) => {
+                       return response.json()
+                   })
+                   .then((data) => {
+                       window.location.href = window.location + data.id
+                   })
+
+           }
+        })
+        
+    })
 
     </script>
 {% endblock%}
