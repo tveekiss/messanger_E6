@@ -78,3 +78,46 @@ main h1 {
     -moz-transition: all 0.25s;
     -o-transition: all 0.25s;
 }
+
+#crateForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 30px 0;
+
+}
+
+#chatName {
+   border: 1px solid #cccccc;
+   border-radius: 3px;
+   -webkit-border-radius: 3px;
+   -moz-border-radius: 3px;
+   -khtml-border-radius: 3px;
+   background: #ffffff !important;
+   outline: none;
+   height: 30px;
+   width: 80%;
+   color: black;
+   font-size: 18px;
+    text-align: center;
+   font-family: Tahoma, RobotoMedium, sans-serif;
+}
+
+#inputChat {
+    font-family: RobotoMedium, sans-serif;
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    border-radius: 3px;
+    background: #4452FE;
+    padding: 10px 20px;
+    border: none;
+    margin-top: 15px;
+}
+
+#inputChat:hover {
+    background: #1722AD;
+    -webkit-transition: all 0.25s;
+    -moz-transition: all 0.25s;
+    -o-transition: all 0.25s;
+}

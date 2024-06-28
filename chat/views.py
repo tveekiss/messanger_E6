@@ -36,13 +36,11 @@ def chats(request):
 def chat(request, room_id):
     user_profile = user_in_json_userprofile(request.user)
     room = Chat.objects.get(id=room_id)
-
-    print(room.type)
     if room.type == "PR" and not room.users.all().filter(user_id=request.user.id).exists():
         raise Http404
     return render(request, 'chat.html', {
         'user': mark_safe(user_profile),
-        'room_id': mark_safe(json.dumps(room_id))
+        'room_id': mark_safe(room_id)
     })
 
 
@@ -72,7 +70,7 @@ class ChatAPIView(generics.ListCreateAPIView):
             return Chat.objects.filter(users=user1).filter(users=user2)
 
 
-class ChatDetailAPIView(generics.RetrieveAPIView):
+class ChatDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Chat.objects.all()
     serializer_class = ChatSerializer
 

@@ -7,21 +7,18 @@
 {% block css %}
     {% load static %}
     <link href="{% static "styles/chat.css"%}" rel="stylesheet" type="text/css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
         <div class="chat">
-            <div class="chat-header py-3 px-4 border-bottom" id="chat-header">
+            <div class="chat-header" id="chat-header">
             </div>
             <div class="chat-log">
             </div>
-            <div class="flex-grow-0 py-3 px-4 border-top chat-input">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="chat-message-input" placeholder="Введите ваше сообщение">
-                    <button class="btn btn-primary" id="chat-message-submit">Отправить</button>
+                <div class="chat-input">
+                    <input type="text" id="chat-message-input" placeholder="Введите ваше сообщение">
+                    <button id="chat-message-submit">Отправить</button>
                 </div>
-            </div>
         </div>
 {% endblock %}
 
@@ -31,37 +28,131 @@
     <script>
         const user = {{ user }}
         const chat_id = {{ room_id }}
-        
         fetch(`${window.location.origin}/api/v1${window.location.pathname}`)
             .then((response) => {
-                const result = response.json();
-                return result
+                return response.json();
             })
             .then((data) => {
                 if (data.type === "PR") {
                     for (let listUser of data.users) {
                         if (listUser.user.username !== user.username) {
-                            chatHeader(listUser.avatar, listUser.user.username)
+                            chatHeader(listUser.avatar, listUser.user.username, data.type)
                         }
                     }
                 } else {
-                    chatHeader(data.avatar, data.name)
+                    const chatLog = document.querySelector('.chat-log')
+                    chatLog.style.height = '65vh';
+                    chatHeader(data.avatar, data.name, data.type)
                 }
             })
         
-        function chatHeader (avatar, username) {
+        function chatHeader (avatar, username, type) {
             const headerTag = document.createElement('div')
             const imgTag = document.createElement('img')
+            const usernameNode = document.createElement('div')
             const usernameTag = document.createElement('div')
             usernameTag.textContent = username
             usernameTag.className = 'interlocutor-username'
             imgTag.src = avatar
             imgTag.className = 'interlocutor-avatar'
             headerTag.appendChild(imgTag)
-            headerTag.appendChild(usernameTag)
+            usernameNode.appendChild(usernameTag)
+            headerTag.appendChild(usernameNode)
             headerTag.className = 'interlocutor'
             document.querySelector('#chat-header').appendChild(headerTag)
+            console.log(type)
+            if (type === "OP") {
+                const input = document.createElement('input')
+                input.type = 'file'
+                input.id = 'chatAvatarInput'
+                input.style.display = 'none'
+                imgTag.style.cursor = 'pointer'
+                headerTag.appendChild(input)
+                imgTag.addEventListener('click', () => {
+                    input.click();
+                })
+                input.addEventListener('change', () => {
+                    const formData = new FormData();
+                    formData.append('avatar', input.files[0]);
+                    changeChat(formData)
+                });
+                
+                const delButton = document.createElement('button')
+                delButton.className = 'delete-button'
+                delButton.textContent = 'Удалить чат'
+                headerTag.appendChild(delButton)
+                
+                delButton.addEventListener('click', () => {
+                    fetch(`http://${window.location.host}/api/v1/chats/${chat_id}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            "X-CSRFToken": getCookie('csrftoken')
+                        }
+                    })
+                        .then(() => {
+                            chatSocket.send(JSON.stringify({'command': 'delete'}))
+                        })
+                })
+                
+                usernameTag.style.cursor = 'pointer';
+                usernameTag.addEventListener('click', () => {
+                    const editForm = document.createElement('form');
+                    editForm.id = 'editForm';
+                
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = 'newChatName';
+                    input.style.textAlign = 'center';
+                    input.value = usernameNode.textContent;
+                
+                    const button = document.createElement('button');
+                    button.type = 'submit';
+                    button.style.display = 'none';
+                
+                    editForm.appendChild(input);
+                    editForm.appendChild(button);
+                
+                    usernameNode.appendChild(editForm);
+                
+                    usernameTag.style.display = 'none';
+                    const newChatNameInput = document.getElementById('newChatName');
+                    newChatNameInput.focus();
+                    
+                    editForm.addEventListener('keydown', (event) => {
+                        if (event.key === 'Enter') {
+                            event.preventDefault();
+                            const formData = new FormData();
+                            formData.append('name', newChatNameInput.value);
+                            changeChat(formData)
+                        } else if (event.key === 'Escape') {
+                            usernameTag.style.display = 'flex';
+                            editForm.remove();
+                        }
+                    });
+                })
+            }
         }
+        
+        function changeChat (formData) {
+                    fetch(`http://${window.location.host}/api/v1/chats/${chat_id}/`, {
+                            method: 'PUT',
+                            headers: {
+                                "X-CSRFToken" : getCookie('csrftoken')
+                            },
+                            body: formData
+                    })
+                        .then((response) => {
+                            return response.json()
+                        })
+                        .then((e) => {
+                            chatSocket.send(JSON.stringify({'command': 'refresh'}))
+                        })
+                        .catch(() => {
+                            alert('Произошла ошибка')
+                        })
+    
+                        
+                }
         
         function fetchMessages() {
             chatSocket.send(JSON.stringify({'command': 'fetch_messages' }));
@@ -119,6 +210,10 @@
                 }
             } else if (data['command'] === 'new_message'){
                 createMessage(data['message']);
+            } else if (data['command'] === 'refresh') {
+                window.location.reload()
+            } else if (data['command'] === 'delete') {
+                window.location.replace('http://127.0.0.1:8000/chats/')
             }
         };
 
@@ -135,13 +230,15 @@
     document.querySelector('#chat-message-submit').onclick = function(e) {
         const messageInputDom = document.getElementById('chat-message-input');
         const message = messageInputDom.value;
-        chatSocket.send(JSON.stringify({
+        if (message !== ""){
+                    chatSocket.send(JSON.stringify({
             'command': 'new_message',
             'message': message,
             'from': user.username
         }));
 
         messageInputDom.value = '';
+        }
     }
 
     </script>

@@ -73,7 +73,8 @@ nav a {
     cursor: pointer;
 }
 
-#newUsername {
+#newUsername,
+#newChatName {
    border: 1px solid #cccccc;
    border-radius: 3px;
    -webkit-border-radius: 3px;

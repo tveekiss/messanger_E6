@@ -1,7 +1,7 @@
 import json
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
-from .models import Message, UserProfile
+from .models import Message, UserProfile, Chat
 
 
 class ChatConsumer(WebsocketConsumer):
@@ -40,14 +40,34 @@ class ChatConsumer(WebsocketConsumer):
             'timestamp': message.timestamp.strftime('%d-%m-%Y %H:%M:%S')
         }
 
+    def refresh(self, data):
+        content = {
+            'command': 'refresh'
+        }
+        return self.send_chat_message(content)
+
+    def delete(self, data):
+        content = {
+            'command': 'delete'
+        }
+        return self.send_chat_message(content)
+
     commands = {
         'fetch_messages': fetch_messages,
-        'new_message': new_message
+        'new_message': new_message,
+        'refresh': refresh,
+        'delete': delete,
     }
 
     def connect(self):
-
         self.room_id = self.scope['url_route']['kwargs']['room_id']
+        self.room = Chat.objects.get(id=self.room_id)
+        if self.room.type == "OP":
+            user = self.scope['user']
+            user_profile = UserProfile.objects.get(user=user)
+            print(self.room.users.contains(user_profile))
+            if not self.room.users.contains(user_profile):
+                self.room.users.add(user_profile)
         self.room_group_name = f'chat_{self.room_id}'
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,
